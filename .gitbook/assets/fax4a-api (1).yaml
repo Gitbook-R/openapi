@@ -99,7 +99,6 @@ security:
 tags:
   - name: Fax jobs
     description: Send faxes
-x-codeSamples: true
 paths:
   /{custNr}/fax:
     post:
