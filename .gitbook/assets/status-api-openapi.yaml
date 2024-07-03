@@ -1,0 +1,271 @@
+openapi: 3.0.3
+info:
+  title: Public Status API
+  version: "1.0"
+  description: |
+    The public status API allows to get an overall status for the Retarus Cloud Services. This includes current incidents, 
+    planned maintenances or important service information. Separated by service and region.
+
+    For the public dashboard visit: [https://status.retarus.io](https://status.retarus.io)
+servers: 
+  - url: https://api.retarus.com
+tags:
+- name: "Status"
+  description: "View the current global service status"
+paths:
+  /status/1.0:
+    get:
+      tags:
+      - "Status"
+      responses:
+        "200":
+          description: Contains information about all available services.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+components:
+  schemas:
+    StatusResponse:
+      type: object
+      properties:
+        result: 
+          type: object
+          properties:
+            status_overall:
+              $ref: '#/components/schemas/OverallStatus'
+            status:
+              type: array
+              items: 
+                $ref: "#/components/schemas/Status"
+            incidents:
+              type: array
+              items: 
+                $ref: "#/components/schemas/Incident"
+            maintenance:
+              type: object
+              properties:
+                active:
+                  type: array
+                  items: 
+                    $ref: "#/components/schemas/Maintenance"
+                upcoming:
+                  type: array
+                  items: 
+                    $ref: "#/components/schemas/Maintenance"
+
+
+    OverallStatus:
+      type: object
+      properties:
+        updated:
+          type: string
+        status:
+          type: string
+        status_code:
+          type: integer
+      required:
+      - updated
+      - status
+      - status_code
+    Status:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: EAS Portal
+        updated:
+          type: string
+          format: date-time
+        status:
+          $ref: "#/components/schemas/IncidentStatus"
+        status_code:
+          $ref: "#/components/schemas/IncidentStatusCode"
+        containers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Container"
+      required:
+      - id
+      - name
+      - updated
+      - status
+      - status_code
+      - containers
+    Container:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: DE1
+        updated:
+          type: string
+          format: date-time
+        status:
+          $ref: "#/components/schemas/IncidentStatus"
+        status_code:
+          $ref: "#/components/schemas/IncidentStatusCode"
+      required:
+      - id
+      - name
+      - updated
+      - status
+      - status_code
+    Incident:
+      type: object
+      properties:
+        name:
+          type: string
+          example: EDI - Degraded performance
+        _id:
+          type: string
+          format: uuid
+        datetime_open:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        containers_affected:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContainerRef"
+        components_affected:
+          type: array
+          items:
+            $ref: "#/components/schemas/ComponentRef"
+      required:
+      - name
+      - _id
+      - datetime_open
+      - messages
+      - containers_affected
+      - components_affected
+    Maintenance:
+      type: object
+      properties:
+        name:
+          type: string
+          example: SMS - Service Maintenance
+        _id:
+          type: string
+          format: uuid
+        datetime_open:
+          type: string
+          format: date-time
+        datetime_planned_start:
+          type: string
+          format: date-time
+        datetime_planned_end:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        containers_affected:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContainerRef"
+        components_affected:
+          type: array
+          items:
+            $ref: "#/components/schemas/ComponentRef"
+          required:
+          - name
+          - _id
+          - datetime_open
+          - datetime_planned_start
+          - datetime_planned_end
+          - messages
+          - containers_affected
+          - components_affected
+    ComponentRef:
+      type: object
+      properties:
+        name:
+          type: string
+          example: EAS Portal
+        _id:
+          type: string
+          format: uuid
+      required:
+      - name
+      - _id
+    ContainerRef:
+      type: object
+      properties:
+        name:
+          type: string
+          example: DE1
+        _id:
+          type: string
+          format: uuid
+      required:
+      - name
+      - _id
+    Message:
+      type: object
+      properties:
+        details:
+          type: string
+          example: We have identified the issue and are working on the resolution.
+        state:
+          type: integer
+          example: 200
+          enum:
+            - 100
+            - 200
+            - 300
+          description: >
+            Status:
+             * default - Resolved
+             * `100` - Investigating
+             * `200` - Identified
+             * `300` - Monitoring
+        status:
+          $ref: "#/components/schemas/IncidentStatusCode"
+        datetime:
+          type: string
+          format: date-time
+      required:
+      - details
+      - state
+      - status
+      - datetime
+    IncidentStatus:
+      type: string
+      enum:
+        - Operational
+        - Degraded Performance
+        - Partial Service Disruption
+        - Service Disruption
+        - Security Event
+    IncidentStatusCode:
+      type: integer
+      enum:
+        - 100
+        - 300
+        - 400
+        - 500
+        - 600
+      description: >
+        Status:
+          * `100` - Operational
+          * `300` - Degraded Performance
+          * `400` - Partial Service Disruption
+          * `500` - Service Disruption
+          * `600` - Security Event
+        
+
+    
+        
+      
+
